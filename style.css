@@ -172,3 +172,29 @@ input[readonly]{background:#f6f8fb;color:#667085}
 }
 
 /* v1.2.3: the redundant 3-card "One Platform for DLLI" block was removed from index.html. */
+
+
+/* ===== DLLI v1.2.4 MINIMAL FIX ONLY ===== */
+/* Never show the mobile dropdown on desktop. */
+.mobile-menu{
+  display:none !important;
+}
+
+/* Never show hamburger button on desktop. */
+.mobile-menu-btn{
+  display:none !important;
+}
+
+@media(max-width:760px){
+  .mobile-menu-btn{
+    display:flex !important;
+  }
+
+  .mobile-menu{
+    display:none !important;
+  }
+
+  .mobile-menu.open{
+    display:block !important;
+  }
+}
