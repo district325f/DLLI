@@ -1,5 +1,5 @@
 window.DLLI_CONFIG = {
-  API_URL: 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE',
+  API_URL: 'https://script.google.com/macros/s/AKfycbz2l9-UaDT7S8WcbNu9-yg4r-uqo5Eu3pxVLizxB7o2WR9bfLPu8SJoQ9BQsGQkLyFq/exec',
   LOGO_PATH: 'logo.png',
   ADMIN_PAGE: 'admin.html',
   INDEX_PAGE: 'index.html'
