@@ -7,8 +7,56 @@
   <meta name="description" content="District Lions Leadership Institute Management System - Lions International District 325 F">
   <link rel="icon" href="logo.png">
   <link rel="stylesheet" href="style.css?v=1.2.4">
+
+  <style>
+    /* DLLI v1.2.6: initial API-load gate only. Existing design remains unchanged. */
+    body.dlli-data-loading .topbar,
+    body.dlli-data-loading .marquee,
+    body.dlli-data-loading .nav,
+    body.dlli-data-loading main,
+    body.dlli-data-loading footer,
+    body.dlli-data-loading #maintenanceBanner,
+    body.dlli-data-loading #toast {
+      visibility: hidden !important;
+    }
+    #dlliInitialLoader {
+      display: none;
+    }
+    body.dlli-data-loading #dlliInitialLoader {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      background: #ffffff;
+      color: #123f86;
+      font-family: Arial, sans-serif;
+      font-weight: 700;
+    }
+    #dlliInitialLoader .dlli-loader-ring {
+      width: 42px;
+      height: 42px;
+      border: 4px solid #dce6f5;
+      border-top-color: #123f86;
+      border-radius: 50%;
+      animation: dlliLoaderSpin .8s linear infinite;
+    }
+    @keyframes dlliLoaderSpin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+
 </head>
-<body>
+<body class="dlli-data-loading">
+
+  <div id="dlliInitialLoader" role="status" aria-live="polite">
+    <div class="dlli-loader-ring"></div>
+    <div>DLLI data loading...</div>
+  </div>
+
   <div id="maintenanceBanner" class="maintenance-banner hidden">System is currently under maintenance. Public information remains available, but new registration is temporarily disabled.</div>
   <div class="topbar"><div class="wrap"><span id="districtNameTop">Lions International District 325 F</span><span id="systemStatusText">DLLI Management System</span></div></div>
 
@@ -105,9 +153,9 @@
     </div></section>
   </main>
 
-  <footer class="footer"><div class="footer-grid"><div><strong>DLLI Management System</strong><br><small id="footerDistrict">Lions International District 325 F</small></div><small>Designed by Nirajan Aryal</small></div></footer>
+  <footer class="footer"><div class="footer-grid"><div><strong>DLLI Management System</strong><br><small id="footerDistrict">Lions International District 325 F</small></div><small>Designed by Nirajan Aryal (9851113811)</small></div></footer>
   <div id="toast" class="toast"></div>
-  <script src="config.js"></script><script src="app.js"></script>
+  <script src="config.js"></script><script src="app.js?v=1.2.6"></script>
   <script>
     (function () {
       const menuBtn = document.getElementById('mobileMenuBtn');
