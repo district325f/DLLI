@@ -1,20 +1,70 @@
 const CFG = window.DLLI_CONFIG || {};
 const API_URL = CFG.API_URL || '';
-const $ = (s) => document.querySelector(s);
+const $ = s => document.querySelector(s);
+let publicClubs = [];
 
 function apiReady(){return API_URL && !API_URL.includes('PASTE_YOUR');}
-function setBtnLoading(btn,on,text){if(!btn)return; if(on){btn.dataset.old=btn.innerHTML;btn.classList.add('loading');btn.innerHTML=`<span class="spinner"></span>${text||'Please wait'}`;}else{btn.classList.remove('loading');btn.innerHTML=btn.dataset.old||btn.innerHTML;}}
+function esc(v){return String(v ?? '').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
+function setBtnLoading(btn,on,text){if(!btn)return;if(on){btn.dataset.old=btn.innerHTML;btn.classList.add('loading');btn.innerHTML=`<span class="spinner"></span>${text||'Please wait'}`;}else{btn.classList.remove('loading');btn.innerHTML=btn.dataset.old||btn.innerHTML;}}
 function showBox(el,type,msg){el.className=`status-box show status-${type}`;el.innerHTML=msg;}
+function toast(msg,type='info'){const el=$('#toast');if(!el)return;el.textContent=msg;el.className=`toast show toast-${type}`;clearTimeout(window.__dlliToast);window.__dlliToast=setTimeout(()=>el.className='toast',3200);}
+
 async function apiGet(action,params={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const u=new URL(API_URL);u.searchParams.set('action',action);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v??''));const r=await fetch(u.toString(),{redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
 async function apiPost(action,data={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const body=new URLSearchParams({action,...data});const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body,redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
 
-async function loadPublic(){try{const r=await apiGet('getPublicData');const s=r.settings||{};$('#heroTitle').textContent=s.INSTITUTE_NAME||'District Lions Leadership Institute';$('#noticeMarquee').textContent=s.NOTICE_MARQUEE||'Welcome to District Lions Leadership Institute';$('#venue').textContent=s.VENUE||'To be announced';$('#deadline').textContent=s.REGISTRATION_DEADLINE||'To be announced';$('#regStatus').textContent=(s.REGISTRATION_OPEN||'YES')==='YES'?'Open':'Closed';$('#systemStatusText').textContent=s.SYSTEM_NAME||'DLLI Management System';const f=s.INSTITUTE_DATE_FROM||'',t=s.INSTITUTE_DATE_TO||'';$('#instituteDate').textContent=f?(t&&t!==f?`${f} – ${t}`:f):'To be announced';
-const select=$('#clubSelect');(r.clubs||[]).forEach(c=>{const o=document.createElement('option');o.value=c.Club_Name;o.textContent=c.Club_Name;select.appendChild(o)});renderSchedule(r.sessions||[]);if((s.REGISTRATION_OPEN||'YES')!=='YES'){$('#submitBtn').disabled=true;$('#submitBtn').textContent='Registration Closed';}}
-catch(e){console.warn(e.message);}}
-function renderSchedule(rows){const b=$('#scheduleBody');if(!rows.length)return; b.innerHTML=rows.map(x=>`<tr><td>${esc(x.Session_Number)}</td><td>${esc(x.Session_Title)}</td><td>${esc(x.Date)}</td><td>${esc(x.Start_Time)}${x.End_Time?' - '+esc(x.End_Time):''}</td><td>${esc(x.Faculty_Name)}</td><td>${esc(x.Hall)}</td></tr>`).join('');}
-function esc(v){return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
+async function loadPublic(){
+  try{
+    const r=await apiGet('getPublicData');
+    const s=r.settings||{};
+    publicClubs=r.clubs||[];
+    $('#heroTitle').textContent=s.INSTITUTE_NAME||'District Lions Leadership Institute';
+    $('#noticeMarquee').textContent=s.NOTICE_MARQUEE||'Welcome to District Lions Leadership Institute';
+    $('#venue').textContent=s.VENUE||'To be announced';
+    $('#deadline').textContent=s.REGISTRATION_DEADLINE||'To be announced';
+    $('#regStatus').textContent=(s.REGISTRATION_OPEN||'YES')==='YES'?'Open':'Closed';
+    $('#systemStatusText').textContent=s.SYSTEM_NAME||'DLLI Management System';
+    const f=s.INSTITUTE_DATE_FROM||'',t=s.INSTITUTE_DATE_TO||'';
+    $('#instituteDate').textContent=f?(t&&t!==f?`${f} – ${t}`:f):'To be announced';
 
-$('#registrationForm').addEventListener('submit',async e=>{e.preventDefault();const btn=$('#submitBtn'),box=$('#registrationMessage');setBtnLoading(btn,true,'Submitting');try{const d=Object.fromEntries(new FormData(e.currentTarget).entries());const r=await apiPost('registerParticipant',d);showBox(box,'success',`<strong>Registration submitted successfully.</strong><br>Registration ID: ${esc(r.registrationId)}<br>Status: ${esc(r.status)}`);e.currentTarget.reset();}catch(err){showBox(box,'error',esc(err.message));}finally{setBtnLoading(btn,false);}});
-$('#checkBtn').addEventListener('click',async()=>{const key=$('#checkKey').value.trim(),btn=$('#checkBtn'),box=$('#checkResult');if(!key){showBox(box,'warning','Please enter Lions ID or mobile number.');return;}setBtnLoading(btn,true,'Checking');try{const r=await apiGet('checkRegistration',{key});const x=r.registration;showBox(box,x.Status==='APPROVED'?'success':'info',`<strong>${esc(x.Full_Name)}</strong><br>Club: ${esc(x.Club_Name)}<br>Registration ID: ${esc(x.Registration_ID)}<br>Status: <strong>${esc(x.Status)}</strong>${x.DLLI_ID?`<br>DLLI ID: <strong>${esc(x.DLLI_ID)}</strong>`:''}`);}catch(err){showBox(box,'error',esc(err.message));}finally{setBtnLoading(btn,false);}});
+    const select=$('#clubSelect');
+    select.innerHTML='<option value="">Select Club</option>';
+    publicClubs.forEach(c=>{const o=document.createElement('option');o.value=c.Club_Name;o.textContent=c.Club_Name;select.appendChild(o);});
+    renderSchedule(r.sessions||[]);
+    if((s.REGISTRATION_OPEN||'YES')!=='YES'){$('#submitBtn').disabled=true;$('#submitBtn').textContent='Registration Closed';}
+  }catch(e){console.warn(e.message);toast(e.message,'error');}
+}
 
+function renderSchedule(rows){const b=$('#scheduleBody');if(!rows.length){b.innerHTML='<tr><td colspan="6">No schedule published yet.</td></tr>';return;}b.innerHTML=rows.map(x=>`<tr><td>${esc(x.Session_Number)}</td><td>${esc(x.Session_Title)}</td><td>${esc(x.Date)}</td><td>${esc(x.Start_Time)}${x.End_Time?' - '+esc(x.End_Time):''}</td><td>${esc(x.Faculty_Name)}</td><td>${esc(x.Hall)}</td></tr>`).join('');}
+
+$('#clubSelect').addEventListener('change',e=>{const c=publicClubs.find(x=>x.Club_Name===e.target.value)||{};$('#regionDisplay').value=c.Region||'';$('#zoneDisplay').value=c.Zone||'';});
+
+$('#registrationForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const form=e.currentTarget,btn=$('#submitBtn'),box=$('#registrationMessage');
+  if(!form.reportValidity())return;
+  setBtnLoading(btn,true,'Submitting');
+  try{
+    const d=Object.fromEntries(new FormData(form).entries());
+    const r=await apiPost('registerParticipant',d);
+    showBox(box,'success',`<strong>Registration submitted successfully.</strong><br>Registration ID: <strong>${esc(r.registrationId)}</strong><br>Status: ${esc(r.status)}<br><small>Please save your Registration ID for future reference.</small>`);
+    toast('Registration submitted successfully.','success');
+    form.reset();$('#regionDisplay').value='';$('#zoneDisplay').value='';
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(err){showBox(box,'error',esc(err.message));toast(err.message,'error');}
+  finally{setBtnLoading(btn,false);}
+});
+
+$('#checkBtn').addEventListener('click',async()=>{
+  const key=$('#checkKey').value.trim(),btn=$('#checkBtn'),box=$('#checkResult');
+  if(!key){showBox(box,'warning','Please enter Lions ID, mobile number, Registration ID or DLLI ID.');return;}
+  setBtnLoading(btn,true,'Checking');
+  try{
+    const r=await apiGet('checkRegistration',{key});const x=r.registration;
+    const type=x.Status==='APPROVED'?'success':x.Status==='REJECTED'?'error':'info';
+    showBox(box,type,`<strong>${esc(x.Full_Name)}</strong><br>Club: ${esc(x.Club_Name)}<br>Registration ID: ${esc(x.Registration_ID)}<br>Status: <strong>${esc(x.Status)}</strong>${x.DLLI_ID?`<br>DLLI ID: <strong>${esc(x.DLLI_ID)}</strong>`:''}${x.Rejected_Reason?`<br>Reason: ${esc(x.Rejected_Reason)}`:''}`);
+  }catch(err){showBox(box,'error',esc(err.message));}
+  finally{setBtnLoading(btn,false);}
+});
+
+$('#checkKey').addEventListener('keydown',e=>{if(e.key==='Enter'){$('#checkBtn').click();}});
 document.addEventListener('DOMContentLoaded',loadPublic);
