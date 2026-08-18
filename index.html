@@ -19,7 +19,7 @@
     <div class="nav-links">
       <a href="#about">About</a><a href="#registration">Registration</a><a href="#check">Check Status</a><a href="#schedule">Schedule</a><a id="contactNavBtn" class="hidden" href="#contact">Contact</a>
       <a id="attendanceNavBtn" class="keep btn btn-success hidden" href="#" rel="noopener">Attendance</a>
-      <a class="keep btn btn-light" href="admin.html">Admin</a>
+      <a id="adminPortalBtn" class="keep btn btn-light" href="./admin.html">Admin</a>
     </div>
   </div></nav>
 
@@ -89,4 +89,15 @@
   <footer class="footer"><div class="footer-grid"><div><strong>DLLI Management System</strong><br><small id="footerDistrict">Lions International District 325 F</small></div><small>Designed by Nirajan Aryal</small></div></footer>
   <div id="toast" class="toast"></div>
   <script src="config.js"></script><script src="app.js"></script>
+  <script>
+    (function () {
+      const adminBtn = document.getElementById('adminPortalBtn');
+      if (!adminBtn) return;
+      adminBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        const adminUrl = new URL('./admin.html', window.location.href);
+        window.location.assign(adminUrl.href);
+      });
+    })();
+  </script>
 </body></html>
