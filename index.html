@@ -14,14 +14,42 @@
 
   <div class="marquee" id="marqueeBox"><div class="marquee-track" id="noticeMarquee">Welcome to District Lions Leadership Institute</div></div>
 
-  <nav class="nav"><div class="nav-inner">
-    <a class="brand" href="#home"><img data-dlli-logo src="logo.png" alt="DLLI Logo"><div><div class="brand-title" id="brandTitle">District Lions Leadership Institute</div><div class="brand-sub">DLLI Management System • District 325 F</div></div></a>
-    <div class="nav-links">
-      <a href="#about">About</a><a href="#registration">Registration</a><a href="#check">Check Status</a><a href="#schedule">Schedule</a><a id="contactNavBtn" class="hidden" href="#contact">Contact</a>
-      <a id="attendanceNavBtn" class="keep btn btn-success hidden" href="#" rel="noopener">Attendance</a>
-      <a id="adminPortalBtn" class="keep btn btn-light" href="./admin.html">Admin</a>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#home">
+        <img data-dlli-logo src="logo.png" alt="DLLI Logo">
+        <div>
+          <div class="brand-title" id="brandTitle">District Lions Leadership Institute</div>
+          <div class="brand-sub">DLLI Management System • District 325 F</div>
+        </div>
+      </a>
+
+      <button id="mobileMenuBtn" class="mobile-menu-btn" type="button"
+              aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="nav-links desktop-nav">
+        <a href="#home">Home</a>
+        <a href="#registration">Registration</a>
+        <a href="#check">Check Status</a>
+        <a href="#schedule">Schedule</a>
+        <a id="contactNavBtn" class="hidden" href="#contact">Contact</a>
+        <a id="attendanceNavBtn" class="btn btn-success hidden" href="#" rel="noopener">Attendance</a>
+        <a id="adminPortalBtn" class="btn btn-light" href="./admin.html">Admin</a>
+      </div>
     </div>
-  </div></nav>
+
+    <div id="mobileMenu" class="mobile-menu" aria-hidden="true">
+      <a href="#home">Home</a>
+      <a href="#registration">Registration</a>
+      <a href="#check">Check Registration</a>
+      <a href="#schedule">Program / Schedule</a>
+      <a id="mobileContactNavBtn" class="hidden" href="#contact">Contact</a>
+      <a id="mobileAttendanceNavBtn" class="hidden" href="#" rel="noopener">Attendance</a>
+      <a id="mobileAdminPortalBtn" href="./admin.html">Admin</a>
+    </div>
+  </nav>
 
   <main>
     <section class="hero" id="home"><div class="hero-grid">
@@ -46,12 +74,6 @@
     </div></section>
 
     <section class="capacity-strip"><div class="wrap"><div id="capacitySummary" class="capacity-summary">Loading participant capacity...</div></div></section>
-
-    <section class="section alt" id="about"><div class="section-head"><h2>One Platform for DLLI</h2><p>Designed to make participant registration and training administration simple on both mobile and desktop.</p></div><div class="grid-3">
-      <div class="feature"><div class="icon">✓</div><h3>Easy Registration</h3><p>Participants can submit details online and track approval status using Lions ID, mobile number, Registration ID or DLLI ID.</p></div>
-      <div class="feature"><div class="icon">↗</div><h3>Attendance Link</h3><p>DLLI connects directly to your existing dedicated Attendance System without changing its working logic.</p></div>
-      <div class="feature"><div class="icon">▣</div><h3>Central Management</h3><p>Admins can approve registrations, manage clubs, sessions, faculty, reports and system settings from a separate dashboard.</p></div>
-    </div></section>
 
     <section class="section" id="registration"><div class="section-head"><h2>DLLI Registration</h2><p>Complete the form carefully. Your registration will remain pending until verified by the DLLI administration team.</p></div>
       <div class="form-shell card"><div class="registration-mini-stats"><div><small>Approved</small><strong id="approvedCount">0</strong></div><div><small>Pending</small><strong id="pendingCount">0</strong></div><div><small>Remaining</small><strong id="remainingSeatsMini">—</strong></div></div><form id="registrationForm"><div class="form-grid">
@@ -91,13 +113,88 @@
   <script src="config.js"></script><script src="app.js"></script>
   <script>
     (function () {
-      const adminBtn = document.getElementById('adminPortalBtn');
-      if (!adminBtn) return;
-      adminBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        const adminUrl = new URL('./admin.html', window.location.href);
-        window.location.assign(adminUrl.href);
-      });
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+
+      function closeMobileMenu() {
+        if (!menuBtn || !mobileMenu) return;
+        mobileMenu.classList.remove('open');
+        menuBtn.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        mobileMenu.setAttribute('aria-hidden', 'true');
+      }
+
+      function openMobileMenu() {
+        if (!menuBtn || !mobileMenu) return;
+        mobileMenu.classList.add('open');
+        menuBtn.classList.add('open');
+        menuBtn.setAttribute('aria-expanded', 'true');
+        mobileMenu.setAttribute('aria-hidden', 'false');
+      }
+
+      if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', function (event) {
+          event.stopPropagation();
+          mobileMenu.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(function (link) {
+          link.addEventListener('click', closeMobileMenu);
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!mobileMenu.classList.contains('open')) return;
+          if (!mobileMenu.contains(event.target) && !menuBtn.contains(event.target)) {
+            closeMobileMenu();
+          }
+        });
+
+        window.addEventListener('resize', function () {
+          if (window.innerWidth > 760) closeMobileMenu();
+        });
+      }
+
+      function bindAdminLink(id) {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener('click', function (event) {
+          event.preventDefault();
+          const adminUrl = new URL('./admin.html', window.location.href);
+          window.location.assign(adminUrl.href);
+        });
+      }
+
+      bindAdminLink('adminPortalBtn');
+      bindAdminLink('mobileAdminPortalBtn');
+
+      // Mirror dynamically controlled Contact/Attendance links into the mobile menu.
+      const desktopContact = document.getElementById('contactNavBtn');
+      const mobileContact = document.getElementById('mobileContactNavBtn');
+      const desktopAttendance = document.getElementById('attendanceNavBtn');
+      const mobileAttendance = document.getElementById('mobileAttendanceNavBtn');
+
+      const syncDynamicMenu = function () {
+        if (desktopContact && mobileContact) {
+          mobileContact.classList.toggle('hidden', desktopContact.classList.contains('hidden'));
+        }
+        if (desktopAttendance && mobileAttendance) {
+          mobileAttendance.classList.toggle('hidden', desktopAttendance.classList.contains('hidden'));
+          if (desktopAttendance.getAttribute('href')) {
+            mobileAttendance.setAttribute('href', desktopAttendance.getAttribute('href'));
+          }
+          if (desktopAttendance.getAttribute('target')) {
+            mobileAttendance.setAttribute('target', desktopAttendance.getAttribute('target'));
+          } else {
+            mobileAttendance.removeAttribute('target');
+          }
+        }
+      };
+
+      syncDynamicMenu();
+
+      const observer = new MutationObserver(syncDynamicMenu);
+      if (desktopContact) observer.observe(desktopContact, { attributes: true, attributeFilter: ['class'] });
+      if (desktopAttendance) observer.observe(desktopAttendance, { attributes: true, attributeFilter: ['class', 'href', 'target'] });
     })();
   </script>
 </body></html>
