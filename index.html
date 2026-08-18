@@ -10,54 +10,72 @@
 </head>
 <body>
   <div class="topbar"><div class="wrap"><span>Lions International District 325 F</span><span id="systemStatusText">DLLI Management System</span></div></div>
-  <div class="marquee"><div class="marquee-track" id="noticeMarquee">Welcome to District Lions Leadership Institute</div></div>
+
+  <div class="marquee" id="marqueeBox"><div class="marquee-track" id="noticeMarquee">Welcome to District Lions Leadership Institute</div></div>
 
   <nav class="nav"><div class="nav-inner">
     <a class="brand" href="#home"><img src="logo.png" alt="DLLI Logo"><div><div class="brand-title">District Lions Leadership Institute</div><div class="brand-sub">DLLI Management System • District 325 F</div></div></a>
-    <div class="nav-links"><a href="#about">About</a><a href="#registration">Registration</a><a href="#check">Check Status</a><a href="#schedule">Schedule</a><a class="keep btn btn-light" href="admin.html">Admin</a></div>
+    <div class="nav-links">
+      <a href="#about">About</a><a href="#registration">Registration</a><a href="#check">Check Status</a><a href="#schedule">Schedule</a>
+      <a id="attendanceNavBtn" class="keep btn btn-success hidden" href="#" rel="noopener">Attendance</a>
+      <a class="keep btn btn-light" href="admin.html">Admin</a>
+    </div>
   </div></nav>
 
   <main>
     <section class="hero" id="home"><div class="hero-grid">
-      <div><span class="eyebrow">Leadership • Learning • Service</span><h1 id="heroTitle">District Lions Leadership Institute</h1><p id="heroIntro">A professional platform for participant registration, institute management, attendance, sessions, evaluation and certification.</p><div class="hero-actions"><a class="btn btn-accent" href="#registration">Register Now</a><a class="btn btn-outline hero-outline" href="#check">Check Registration</a></div></div>
-      <div class="hero-card"><h3>Institute Information</h3><div class="meta"><div class="meta-box"><small>Date</small><strong id="instituteDate">To be announced</strong></div><div class="meta-box"><small>Venue</small><strong id="venue">To be announced</strong></div><div class="meta-box"><small>Registration</small><strong id="regStatus">Open</strong></div><div class="meta-box"><small>Deadline</small><strong id="deadline">To be announced</strong></div></div></div>
+      <div>
+        <span class="eyebrow">Leadership • Learning • Service</span>
+        <h1 id="heroTitle">District Lions Leadership Institute</h1>
+        <p id="heroIntro">A professional platform for DLLI registration, participant management, training schedules and institute administration.</p>
+        <div class="hero-actions">
+          <a class="btn btn-accent" href="#registration">Register Now</a>
+          <a class="btn btn-outline hero-outline" href="#check">Check Registration</a>
+          <a id="attendanceHeroBtn" class="btn btn-success hidden" href="#" rel="noopener">Open Attendance System</a>
+        </div>
+      </div>
+      <div class="hero-card"><h3>Institute Information</h3><div class="meta">
+        <div class="meta-box"><small>Date</small><strong id="instituteDate">To be announced</strong></div>
+        <div class="meta-box"><small>Venue</small><strong id="venue">To be announced</strong></div>
+        <div class="meta-box"><small>Registration</small><strong id="regStatus">Open</strong></div>
+        <div class="meta-box"><small>Deadline</small><strong id="deadline">To be announced</strong></div>
+      </div></div>
     </div></section>
 
-    <section class="section alt" id="about"><div class="section-head"><h2>One Platform for DLLI</h2><p>Designed to make registration, participant communication, attendance and training administration simple on both mobile and desktop.</p></div><div class="grid-3">
-      <div class="feature"><div class="icon">✓</div><h3>Easy Registration</h3><p>Participants can submit their details online and track approval status using Lions ID, mobile number or DLLI ID.</p></div>
-      <div class="feature"><div class="icon">⌁</div><h3>QR Ready</h3><p>Approved participants receive a unique DLLI ID structure ready for QR attendance and certificate verification.</p></div>
-      <div class="feature"><div class="icon">▣</div><h3>Central Management</h3><p>Admins can approve registrations, manage settings and monitor institute statistics from a separate dashboard.</p></div>
+    <section class="section alt" id="about"><div class="section-head"><h2>One Platform for DLLI</h2><p>Designed to make participant registration and training administration simple on both mobile and desktop.</p></div><div class="grid-3">
+      <div class="feature"><div class="icon">✓</div><h3>Easy Registration</h3><p>Participants can submit details online and track approval status using Lions ID, mobile number, Registration ID or DLLI ID.</p></div>
+      <div class="feature"><div class="icon">↗</div><h3>Attendance Link</h3><p>DLLI connects directly to your existing dedicated Attendance System without changing its working logic.</p></div>
+      <div class="feature"><div class="icon">▣</div><h3>Central Management</h3><p>Admins can approve registrations, manage clubs, sessions, faculty, reports and system settings from a separate dashboard.</p></div>
     </div></section>
 
     <section class="section" id="registration"><div class="section-head"><h2>DLLI Registration</h2><p>Complete the form carefully. Your registration will remain pending until verified by the DLLI administration team.</p></div>
       <div class="form-shell card"><form id="registrationForm"><div class="form-grid">
-        <div class="field"><label>Lions ID *</label><input name="lionsId" inputmode="numeric" pattern="[0-9]{4,12}" required placeholder="Enter Lions ID"></div>
+        <div class="field"><label>Lions ID *</label><input name="lionsId" inputmode="numeric" required placeholder="Enter Lions ID"></div>
         <div class="field"><label>Full Name *</label><input name="fullName" required placeholder="Lion Full Name"></div>
         <div class="field"><label>Club Name *</label><select name="clubName" id="clubSelect" required><option value="">Select Club</option></select></div>
         <div class="field"><label>Current Position *</label><input name="currentPosition" required placeholder="e.g. Club President"></div>
         <div class="field"><label>Region</label><input id="regionDisplay" readonly placeholder="Auto from Club"></div>
         <div class="field"><label>Zone</label><input id="zoneDisplay" readonly placeholder="Auto from Club"></div>
-        <div class="field"><label>Mobile Number *</label><input name="mobile" required inputmode="tel" pattern="[0-9]{10}" maxlength="10" placeholder="98XXXXXXXX"></div>
+        <div class="field"><label>Mobile Number *</label><input name="mobile" required inputmode="tel" placeholder="98XXXXXXXX"></div>
         <div class="field"><label>Email *</label><input name="email" type="email" required placeholder="name@example.com"></div>
         <div class="field"><label>Gender</label><select name="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
         <div class="field"><label>T-shirt Size</label><select name="tshirtSize"><option value="">Select</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>XXXL</option></select></div>
         <div class="field"><label>Food Preference</label><select name="foodPreference"><option value="">Select</option><option>Vegetarian</option><option>Non-Vegetarian</option><option>Other</option></select></div>
         <div class="field"><label>Accommodation Required</label><select name="accommodationRequired"><option value="NO">NO</option><option value="YES">YES</option></select></div>
         <div class="field"><label>Emergency Contact Name</label><input name="emergencyName" placeholder="Contact person"></div>
-        <div class="field"><label>Emergency Contact Number</label><input name="emergencyNumber" inputmode="tel" pattern="[0-9]{10}" maxlength="10" placeholder="98XXXXXXXX"></div>
+        <div class="field"><label>Emergency Contact Number</label><input name="emergencyNumber" inputmode="tel" placeholder="98XXXXXXXX"></div>
         <div class="field full"><label>Previous Leadership Training</label><input name="previousTraining" placeholder="Mention previous institute/training, if any"></div>
         <div class="field full"><label>Remarks</label><textarea name="remarks" placeholder="Any additional information"></textarea></div>
         <div class="field full"><button class="btn btn-primary" id="submitBtn" type="submit">Submit Registration</button><div class="hint">Fields marked * are required.</div></div>
       </div></form><div id="registrationMessage" class="status-box"></div></div>
     </section>
 
-    <section class="section alt" id="check"><div class="section-head"><h2>Check Registration Status</h2><p>Use your Lions ID, registered mobile number, Registration ID or DLLI ID.</p></div><div class="form-shell card"><div class="form-grid"><div class="field"><label>Search ID / Mobile</label><input id="checkKey" placeholder="Lions ID / Mobile / DLLI ID"></div><div class="field action-field"><button class="btn btn-primary" id="checkBtn" type="button">Check Status</button></div></div><div id="checkResult" class="status-box"></div></div></section>
+    <section class="section alt" id="check"><div class="section-head"><h2>Check Registration Status</h2><p>Use Lions ID, mobile number, Registration ID or DLLI ID.</p></div><div class="form-shell card"><div class="form-grid"><div class="field"><label>Search Key</label><input id="checkKey" placeholder="Enter Lions ID / Mobile / Registration ID / DLLI ID"></div><div class="field action-field"><button class="btn btn-primary" id="checkBtn" type="button">Check Status</button></div></div><div id="checkResult" class="status-box"></div></div></section>
 
     <section class="section" id="schedule"><div class="section-head"><h2>Institute Schedule</h2><p>Active sessions published by the administration will appear here.</p></div><div class="wrap card"><div class="table-wrap"><table><thead><tr><th>Session</th><th>Title</th><th>Date</th><th>Time</th><th>Faculty</th><th>Hall</th></tr></thead><tbody id="scheduleBody"><tr><td colspan="6">No schedule published yet.</td></tr></tbody></table></div></div></section>
   </main>
 
   <footer class="footer"><div class="footer-grid"><div><strong>DLLI Management System</strong><br><small>Lions International District 325 F</small></div><small>Designed by Nirajan Aryal</small></div></footer>
-  <div id="toast" class="toast" aria-live="polite"></div>
+  <div id="toast" class="toast"></div>
   <script src="config.js"></script><script src="app.js"></script>
-</body>
-</html>
+</body></html>
