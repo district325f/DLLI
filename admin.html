@@ -1,63 +1,100 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>DLLI Admin | District 325 F</title>
-  <link rel="icon" href="logo.png"><link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-</head>
-<body>
-<div id="loginView" class="login-screen"><div class="login-card">
-  <div class="login-logo"><img src="logo.png" alt="Logo"></div>
-  <div class="center"><h2>DLLI Admin Portal</h2><p class="muted">Lions International District 325 F</p></div>
-  <form id="loginForm"><div class="field"><label>Username</label><input name="username" autocomplete="username" required></div><div class="field mt12"><label>Password</label><input name="password" type="password" autocomplete="current-password" required></div><button id="loginBtn" class="btn btn-primary full-btn" type="submit">Login</button></form>
-  <div id="loginMsg" class="status-box"></div><div class="center mt18"><a href="index.html" class="text-link">← Back to DLLI Home</a></div>
-</div></div>
+const CFG = window.DLLI_CONFIG || {};
+const API_URL = CFG.API_URL || '';
+const $ = s => document.querySelector(s);
+let publicClubs = [];
 
-<div id="adminView" class="admin-layout hidden">
-  <aside class="sidebar">
-    <div class="side-brand"><img src="logo.png"><div><strong>DLLI Admin</strong><div class="side-sub">District 325 F</div></div></div>
-    <div class="side-menu">
-      <button class="active" data-panel="dashboard">Dashboard</button>
-      <button data-panel="registrations">Registrations</button>
-      <button data-panel="clubs">Clubs</button>
-      <button data-panel="sessions">Sessions</button>
-      <button data-panel="faculty">Faculty</button>
-      <button data-panel="reports">Reports</button>
-      <button data-panel="settings">Settings</button>
-      <button id="attendanceAdminBtn" class="hidden">Open Attendance</button>
-      <button id="logoutBtn">Logout</button>
-    </div>
-  </aside>
+function apiReady(){return API_URL && !API_URL.includes('PASTE_YOUR');}
+function esc(v){return String(v ?? '').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
+function setBtnLoading(btn,on,text){if(!btn)return;if(on){btn.dataset.old=btn.innerHTML;btn.classList.add('loading');btn.innerHTML=`<span class="spinner"></span>${text||'Please wait'}`;}else{btn.classList.remove('loading');btn.innerHTML=btn.dataset.old||btn.innerHTML;}}
+function showBox(el,type,msg){if(!el)return;el.className=`status-box show status-${type}`;el.innerHTML=msg;}
+function toast(msg,type='info'){const el=$('#toast');if(!el)return;el.textContent=msg;el.className=`toast show toast-${type}`;clearTimeout(window.__dlliToast);window.__dlliToast=setTimeout(()=>el.className='toast',3200);}
 
-  <main class="admin-main">
-    <div class="admin-top"><div><strong id="topTitle">Dashboard</strong><div class="admin-id" id="adminIdentity"></div></div><div class="top-actions"><a id="attendanceTopBtn" class="btn btn-success mini hidden" href="#" rel="noopener">Attendance</a><a class="btn btn-light mini" href="index.html">View Public Site</a></div></div>
-    <div class="admin-content">
-      <section id="panel-dashboard" class="panel active">
-        <div class="panel-head"><h2>Dashboard</h2><button class="btn btn-outline mini" id="refreshDashboard">Refresh</button></div>
-        <div class="stats stats-5"><div class="stat"><small>Total Registrations</small><strong id="stTotal">0</strong></div><div class="stat"><small>Pending</small><strong id="stPending">0</strong></div><div class="stat"><small>Approved</small><strong id="stApproved">0</strong></div><div class="stat"><small>Waiting List</small><strong id="stWaiting">0</strong></div><div class="stat"><small>Rejected</small><strong id="stRejected">0</strong></div></div>
-        <div class="analysis-grid"><div class="card"><h3>Gender</h3><div id="genderBreakdown" class="breakdown"></div></div><div class="card"><h3>Region</h3><div id="regionBreakdown" class="breakdown"></div></div><div class="card"><h3>Zone</h3><div id="zoneBreakdown" class="breakdown"></div></div><div class="card"><h3>Club Participation</h3><div id="clubBreakdown" class="breakdown"></div></div></div>
-        <div class="card mt18"><h3>Recent Registrations</h3><div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Club</th><th>Mobile</th><th>Status</th></tr></thead><tbody id="recentBody"></tbody></table></div></div>
-      </section>
+async function apiGet(action,params={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const u=new URL(API_URL);u.searchParams.set('action',action);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v??''));const r=await fetch(u.toString(),{redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
+async function apiPost(action,data={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const body=new URLSearchParams({action,...data});const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body,redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
 
-      <section id="panel-registrations" class="panel"><div class="panel-head"><div><h2>Registrations</h2><div class="muted small">Approve, reject, edit or move applicants to waiting list.</div></div><button class="btn btn-outline mini" id="refreshRegs">Refresh</button></div><div class="card"><div class="form-grid mb14"><div class="field"><label>Filter Status</label><select id="regFilter"><option value="ALL">All</option><option>PENDING</option><option>APPROVED</option><option>REJECTED</option><option>WAITING_LIST</option></select></div><div class="field"><label>Search</label><input id="regSearch" placeholder="Name / Lions ID / Club / Mobile"></div></div><div class="table-wrap"><table><thead><tr><th>Registration</th><th>Name</th><th>Lions ID</th><th>Club</th><th>Mobile</th><th>Status</th><th>Action</th></tr></thead><tbody id="regsBody"></tbody></table></div></div></section>
+function applyMarqueeSettings(s){
+  const box=$('#marqueeBox'), track=$('#noticeMarquee'); if(!box||!track)return;
+  const speed=Math.max(5,Number(s.MARQUEE_SPEED||65));
+  const size=Math.max(10,Math.min(36,Number(s.MARQUEE_FONT_SIZE||17)));
+  box.style.background=s.MARQUEE_BG_COLOR||'#FFF4E5';
+  track.style.color=s.MARQUEE_TEXT_COLOR||'#B00020';
+  track.style.fontWeight=String(s.MARQUEE_BOLD||'YES').toUpperCase()==='YES'?'800':'400';
+  track.style.fontSize=size+'px';
+  track.style.animationDuration=speed+'s';
+  track.style.animationName=String(s.MARQUEE_DIRECTION||'LEFT').toUpperCase()==='RIGHT'?'scrollRight':'scrollLeft';
+}
 
-      <section id="panel-clubs" class="panel"><div class="panel-head"><div><h2>Clubs</h2><div class="muted small">Existing club data is preserved. Auto Setup fills only missing internal fields.</div></div><div class="row-actions"><button class="btn btn-outline mini" id="refreshClubs">Refresh</button><button class="btn btn-primary mini" id="setupClubsBtn">Auto Setup Clubs</button></div></div><div class="stats"><div class="stat"><small>Total Clubs</small><strong id="clubTotal">0</strong></div><div class="stat"><small>Active</small><strong id="clubActive">0</strong></div><div class="stat"><small>Missing Club ID</small><strong id="clubMissing">0</strong></div><div class="stat"><small>Missing Status</small><strong id="clubMissingStatus">0</strong></div></div><div id="clubWarnings" class="status-box"></div><div class="card mt18"><div class="table-wrap"><table><thead><tr><th>Club ID</th><th>Club Name</th><th>Club Number</th><th>Region</th><th>Zone</th><th>Status</th></tr></thead><tbody id="clubsBody"></tbody></table></div></div></section>
+function configureAttendance(s){
+  const url=String(s.ATTENDANCE_URL||'').trim();
+  const text=String(s.ATTENDANCE_BUTTON_TEXT||'Attendance').trim()||'Attendance';
+  const openNew=String(s.ATTENDANCE_OPEN_NEW_TAB||'YES').toUpperCase()==='YES';
+  ['#attendanceNavBtn','#attendanceHeroBtn'].forEach(sel=>{
+    const el=$(sel); if(!el)return;
+    if(/^https?:\/\//i.test(url)){
+      el.href=url; el.classList.remove('hidden');
+      el.target=openNew?'_blank':'_self';
+      el.textContent=sel.includes('Hero')?`Open ${text}`:text;
+    }else{
+      el.classList.add('hidden'); el.removeAttribute('href');
+    }
+  });
+}
 
-      <section id="panel-sessions" class="panel"><div class="panel-head"><h2>Sessions</h2><button class="btn btn-primary mini" id="addSessionBtn">Add Session</button></div><div class="card"><div class="table-wrap"><table><thead><tr><th>No.</th><th>Title</th><th>Date</th><th>Time</th><th>Faculty</th><th>Hall</th><th>Status</th></tr></thead><tbody id="sessionsBody"></tbody></table></div></div></section>
+async function loadPublic(){
+  try{
+    const r=await apiGet('getPublicData');
+    const s=r.settings||{};
+    publicClubs=r.clubs||[];
+    $('#heroTitle').textContent=s.INSTITUTE_NAME||'District Lions Leadership Institute';
+    $('#noticeMarquee').textContent=s.NOTICE_MARQUEE||'Welcome to District Lions Leadership Institute';
+    $('#venue').textContent=s.VENUE||'To be announced';
+    $('#deadline').textContent=s.REGISTRATION_DEADLINE||'To be announced';
+    $('#regStatus').textContent=(s.REGISTRATION_OPEN||'YES')==='YES'?'Open':'Closed';
+    $('#systemStatusText').textContent=s.SYSTEM_NAME||'DLLI Management System';
+    const f=s.INSTITUTE_DATE_FROM||'',t=s.INSTITUTE_DATE_TO||'';
+    $('#instituteDate').textContent=f?(t&&t!==f?`${f} – ${t}`:f):'To be announced';
+    applyMarqueeSettings(s);
+    configureAttendance(s);
 
-      <section id="panel-faculty" class="panel"><div class="panel-head"><h2>Faculty</h2><button class="btn btn-primary mini" id="addFacultyBtn">Add Faculty</button></div><div class="card"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Club</th><th>Phone</th><th>Status</th></tr></thead><tbody id="facultyBody"></tbody></table></div></div></section>
+    const select=$('#clubSelect');
+    select.innerHTML='<option value="">Select Club</option>';
+    publicClubs.forEach(c=>{const o=document.createElement('option');o.value=c.Club_Name;o.textContent=c.Club_Name;select.appendChild(o);});
+    renderSchedule(r.sessions||[]);
+    if((s.REGISTRATION_OPEN||'YES')!=='YES'){$('#submitBtn').disabled=true;$('#submitBtn').textContent='Registration Closed';}
+  }catch(e){console.warn(e.message);toast(e.message,'error');}
+}
 
-      <section id="panel-reports" class="panel"><div class="panel-head"><div><h2>Reports</h2><div id="reportCount" class="muted small"></div></div><button class="btn btn-success mini" id="exportExcelBtn">Export Excel</button></div><div class="card"><div class="report-filters"><div class="field"><label>Status</label><select id="reportStatus"><option value="ALL">All</option><option>PENDING</option><option>APPROVED</option><option>REJECTED</option><option>WAITING_LIST</option></select></div><div class="field"><label>Region</label><select id="reportRegion"><option value="ALL">All</option></select></div><div class="field"><label>Zone</label><select id="reportZone"><option value="ALL">All</option></select></div><div class="field"><label>Search</label><input id="reportSearch" placeholder="Name / Club / Lions ID / DLLI ID"></div></div><div class="table-wrap mt18"><table><thead><tr><th>DLLI ID</th><th>Name</th><th>Lions ID</th><th>Club</th><th>Region</th><th>Zone</th><th>Position</th><th>Mobile</th><th>Status</th></tr></thead><tbody id="reportsBody"></tbody></table></div></div></section>
+function renderSchedule(rows){const b=$('#scheduleBody');if(!rows.length){b.innerHTML='<tr><td colspan="6">No schedule published yet.</td></tr>';return;}b.innerHTML=rows.map(x=>`<tr><td>${esc(x.Session_Number)}</td><td>${esc(x.Session_Title)}</td><td>${esc(x.Date)}</td><td>${esc(x.Start_Time)}${x.End_Time?' - '+esc(x.End_Time):''}</td><td>${esc(x.Faculty_Name)}</td><td>${esc(x.Hall)}</td></tr>`).join('');}
 
-      <section id="panel-settings" class="panel"><div class="panel-head"><div><h2>System Settings</h2><div class="muted small">Attendance button and marquee appearance are controlled here.</div></div><button class="btn btn-primary mini" id="saveSettingsBtn">Save Settings</button></div><div class="card"><div id="settingsGrid" class="settings-grid"></div></div></section>
-    </div>
-  </main>
-</div>
+$('#clubSelect').addEventListener('change',e=>{const c=publicClubs.find(x=>x.Club_Name===e.target.value)||{};$('#regionDisplay').value=c.Region||'';$('#zoneDisplay').value=c.Zone||'';});
 
-<div id="registrationModal" class="modal"><div class="modal-card modal-wide"><div class="modal-head"><h3>Registration Detail</h3><button id="regModalClose" class="btn btn-outline mini">Close</button></div><form id="regEditForm"><input id="editRegistrationId" name="registrationId" type="hidden"><div id="regDetailFields" class="form-grid"></div><div class="row-actions modal-actions"><button id="saveRegEdit" class="btn btn-primary" type="submit">Save Changes</button><button id="approveFromModal" class="btn btn-success" type="button">Approve</button><button id="waitingFromModal" class="btn btn-light" type="button">Waiting List</button><button id="rejectFromModal" class="btn btn-danger" type="button">Reject</button></div></form><div id="regModalMsg" class="status-box"></div></div></div>
+$('#registrationForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const form=e.currentTarget,btn=$('#submitBtn'),box=$('#registrationMessage');
+  if(!form.reportValidity())return;
+  setBtnLoading(btn,true,'Submitting');
+  try{
+    const d=Object.fromEntries(new FormData(form).entries());
+    const r=await apiPost('registerParticipant',d);
+    showBox(box,'success',`<strong>Registration submitted successfully.</strong><br>Registration ID: <strong>${esc(r.registrationId)}</strong><br>Status: ${esc(r.status)}<br><small>Please save your Registration ID for future reference.</small>`);
+    toast('Registration submitted successfully.','success');
+    form.reset();$('#regionDisplay').value='';$('#zoneDisplay').value='';
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(err){showBox(box,'error',esc(err.message));toast(err.message,'error');}
+  finally{setBtnLoading(btn,false);}
+});
 
-<div id="dataModal" class="modal"><div class="modal-card"><div class="modal-head"><h3 id="modalTitle">Add</h3><button id="modalClose" class="btn btn-outline mini">Close</button></div><form id="modalForm"><div id="modalFields" class="form-grid"></div><button id="modalSave" class="btn btn-primary full-btn" type="submit">Save</button></form><div id="modalMsg" class="status-box"></div></div></div>
-<div id="toast" class="toast"></div>
-<script src="config.js"></script><script src="admin.js"></script>
-</body></html>
+$('#checkBtn').addEventListener('click',async()=>{
+  const key=$('#checkKey').value.trim(),btn=$('#checkBtn'),box=$('#checkResult');
+  if(!key){showBox(box,'warning','Please enter Lions ID, mobile number, Registration ID or DLLI ID.');return;}
+  setBtnLoading(btn,true,'Checking');
+  try{
+    const r=await apiGet('checkRegistration',{key});const x=r.registration;
+    const type=x.Status==='APPROVED'?'success':x.Status==='REJECTED'?'error':'info';
+    showBox(box,type,`<strong>${esc(x.Full_Name)}</strong><br>Club: ${esc(x.Club_Name)}<br>Registration ID: ${esc(x.Registration_ID)}<br>Status: <strong>${esc(x.Status)}</strong>${x.DLLI_ID?`<br>DLLI ID: <strong>${esc(x.DLLI_ID)}</strong>`:''}${x.Rejected_Reason?`<br>Reason: ${esc(x.Rejected_Reason)}`:''}`);
+  }catch(err){showBox(box,'error',esc(err.message));}
+  finally{setBtnLoading(btn,false);}
+});
+
+$('#checkKey').addEventListener('keydown',e=>{if(e.key==='Enter'){$('#checkBtn').click();}});
+document.addEventListener('DOMContentLoaded',loadPublic);
