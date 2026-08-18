@@ -13,6 +13,13 @@ function validHttpUrl(v){return /^https?:\/\//i.test(String(v||'').trim());}
 function digits(v){return String(v||'').replace(/\D/g,'');}
 function setText(sel,value,fallback=''){const el=$(sel);if(el)el.textContent=value||fallback;}
 
+function finishInitialPageLoad(){
+  document.body.classList.remove('dlli-data-loading');
+  const loader=document.getElementById('dlliInitialLoader');
+  if(loader)loader.remove();
+}
+
+
 async function apiGet(action,params={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const u=new URL(API_URL);u.searchParams.set('action',action);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v??''));const r=await fetch(u.toString(),{redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
 async function apiPost(action,data={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const body=new URLSearchParams({action,...data});const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body,redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
 
@@ -162,6 +169,7 @@ async function loadPublic(){
     publicClubs.forEach(c=>{const o=document.createElement('option');o.value=c.Club_Name;o.textContent=c.Club_Name;select.appendChild(o);});
     renderSchedule(r.sessions||[]);
   }catch(e){console.warn(e.message);toast(e.message,'error');}
+  finally{finishInitialPageLoad();}
 }
 
 function renderSchedule(rows){const b=$('#scheduleBody');if(!rows.length){b.innerHTML='<tr><td colspan="6">No schedule published yet.</td></tr>';return;}b.innerHTML=rows.map(x=>`<tr><td>${esc(x.Session_Number)}</td><td>${esc(x.Session_Title)}</td><td>${esc(x.Date)}</td><td>${esc(x.Start_Time)}${x.End_Time?' - '+esc(x.End_Time):''}</td><td>${esc(x.Faculty_Name)}</td><td>${esc(x.Hall)}</td></tr>`).join('');}
