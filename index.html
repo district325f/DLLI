@@ -9,14 +9,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="topbar"><div class="wrap"><span>Lions International District 325 F</span><span id="systemStatusText">DLLI Management System</span></div></div>
+  <div id="maintenanceBanner" class="maintenance-banner hidden">System is currently under maintenance. Public information remains available, but new registration is temporarily disabled.</div>
+  <div class="topbar"><div class="wrap"><span id="districtNameTop">Lions International District 325 F</span><span id="systemStatusText">DLLI Management System</span></div></div>
 
   <div class="marquee" id="marqueeBox"><div class="marquee-track" id="noticeMarquee">Welcome to District Lions Leadership Institute</div></div>
 
   <nav class="nav"><div class="nav-inner">
-    <a class="brand" href="#home"><img src="logo.png" alt="DLLI Logo"><div><div class="brand-title">District Lions Leadership Institute</div><div class="brand-sub">DLLI Management System • District 325 F</div></div></a>
+    <a class="brand" href="#home"><img data-dlli-logo src="logo.png" alt="DLLI Logo"><div><div class="brand-title" id="brandTitle">District Lions Leadership Institute</div><div class="brand-sub">DLLI Management System • District 325 F</div></div></a>
     <div class="nav-links">
-      <a href="#about">About</a><a href="#registration">Registration</a><a href="#check">Check Status</a><a href="#schedule">Schedule</a>
+      <a href="#about">About</a><a href="#registration">Registration</a><a href="#check">Check Status</a><a href="#schedule">Schedule</a><a id="contactNavBtn" class="hidden" href="#contact">Contact</a>
       <a id="attendanceNavBtn" class="keep btn btn-success hidden" href="#" rel="noopener">Attendance</a>
       <a class="keep btn btn-light" href="admin.html">Admin</a>
     </div>
@@ -29,18 +30,22 @@
         <h1 id="heroTitle">District Lions Leadership Institute</h1>
         <p id="heroIntro">A professional platform for DLLI registration, participant management, training schedules and institute administration.</p>
         <div class="hero-actions">
-          <a class="btn btn-accent" href="#registration">Register Now</a>
+          <a class="btn btn-accent" id="registerHeroBtn" href="#registration">Register Now</a>
           <a class="btn btn-outline hero-outline" href="#check">Check Registration</a>
           <a id="attendanceHeroBtn" class="btn btn-success hidden" href="#" rel="noopener">Open Attendance System</a>
         </div>
       </div>
       <div class="hero-card"><h3>Institute Information</h3><div class="meta">
         <div class="meta-box"><small>Date</small><strong id="instituteDate">To be announced</strong></div>
-        <div class="meta-box"><small>Venue</small><strong id="venue">To be announced</strong></div>
+        <div class="meta-box"><small>Venue</small><strong id="venue">To be announced</strong><a id="venueMapBtn" class="meta-link hidden" href="#" rel="noopener">📍 View Location</a></div>
         <div class="meta-box"><small>Registration</small><strong id="regStatus">Open</strong></div>
         <div class="meta-box"><small>Deadline</small><strong id="deadline">To be announced</strong></div>
+        <div class="meta-box"><small>Maximum Participants</small><strong id="maxParticipants">Open</strong></div>
+        <div class="meta-box"><small>Remaining Seats</small><strong id="remainingSeats">Open</strong></div>
       </div></div>
     </div></section>
+
+    <section class="capacity-strip"><div class="wrap"><div id="capacitySummary" class="capacity-summary">Loading participant capacity...</div></div></section>
 
     <section class="section alt" id="about"><div class="section-head"><h2>One Platform for DLLI</h2><p>Designed to make participant registration and training administration simple on both mobile and desktop.</p></div><div class="grid-3">
       <div class="feature"><div class="icon">✓</div><h3>Easy Registration</h3><p>Participants can submit details online and track approval status using Lions ID, mobile number, Registration ID or DLLI ID.</p></div>
@@ -49,7 +54,7 @@
     </div></section>
 
     <section class="section" id="registration"><div class="section-head"><h2>DLLI Registration</h2><p>Complete the form carefully. Your registration will remain pending until verified by the DLLI administration team.</p></div>
-      <div class="form-shell card"><form id="registrationForm"><div class="form-grid">
+      <div class="form-shell card"><div class="registration-mini-stats"><div><small>Approved</small><strong id="approvedCount">0</strong></div><div><small>Pending</small><strong id="pendingCount">0</strong></div><div><small>Remaining</small><strong id="remainingSeatsMini">—</strong></div></div><form id="registrationForm"><div class="form-grid">
         <div class="field"><label>Lions ID *</label><input name="lionsId" inputmode="numeric" required placeholder="Enter Lions ID"></div>
         <div class="field"><label>Full Name *</label><input name="fullName" required placeholder="Lion Full Name"></div>
         <div class="field"><label>Club Name *</label><select name="clubName" id="clubSelect" required><option value="">Select Club</option></select></div>
@@ -73,9 +78,15 @@
     <section class="section alt" id="check"><div class="section-head"><h2>Check Registration Status</h2><p>Use Lions ID, mobile number, Registration ID or DLLI ID.</p></div><div class="form-shell card"><div class="form-grid"><div class="field"><label>Search Key</label><input id="checkKey" placeholder="Enter Lions ID / Mobile / Registration ID / DLLI ID"></div><div class="field action-field"><button class="btn btn-primary" id="checkBtn" type="button">Check Status</button></div></div><div id="checkResult" class="status-box"></div></div></section>
 
     <section class="section" id="schedule"><div class="section-head"><h2>Institute Schedule</h2><p>Active sessions published by the administration will appear here.</p></div><div class="wrap card"><div class="table-wrap"><table><thead><tr><th>Session</th><th>Title</th><th>Date</th><th>Time</th><th>Faculty</th><th>Hall</th></tr></thead><tbody id="scheduleBody"><tr><td colspan="6">No schedule published yet.</td></tr></tbody></table></div></div></section>
+
+    <section class="section alt hidden" id="contact"><div class="section-head"><h2>Contact DLLI</h2><p>Contact information below is controlled directly from the Settings sheet.</p></div><div class="contact-grid wrap">
+      <div id="phoneContact" class="contact-card hidden"><div class="contact-icon">☎</div><div><small>Phone</small><strong id="contactPhoneText"></strong><a id="contactPhoneLink" class="btn btn-light mini" href="#">Call Now</a></div></div>
+      <div id="emailContact" class="contact-card hidden"><div class="contact-icon">✉</div><div><small>Email</small><strong id="contactEmailText"></strong><a id="contactEmailLink" class="btn btn-light mini" href="#">Send Email</a></div></div>
+      <div id="whatsappContact" class="contact-card hidden"><div class="contact-icon">◉</div><div><small>WhatsApp</small><strong id="contactWhatsappText"></strong><a id="contactWhatsappLink" class="btn btn-success mini" href="#" rel="noopener">Open WhatsApp</a></div></div>
+    </div></section>
   </main>
 
-  <footer class="footer"><div class="footer-grid"><div><strong>DLLI Management System</strong><br><small>Lions International District 325 F</small></div><small>Designed by Nirajan Aryal</small></div></footer>
+  <footer class="footer"><div class="footer-grid"><div><strong>DLLI Management System</strong><br><small id="footerDistrict">Lions International District 325 F</small></div><small>Designed by Nirajan Aryal</small></div></footer>
   <div id="toast" class="toast"></div>
   <script src="config.js"></script><script src="app.js"></script>
 </body></html>
