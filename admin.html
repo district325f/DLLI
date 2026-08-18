@@ -1,100 +1,81 @@
-const CFG = window.DLLI_CONFIG || {};
-const API_URL = CFG.API_URL || '';
-const $ = s => document.querySelector(s);
-let publicClubs = [];
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DLLI Management System | District 325 F</title>
+  <meta name="description" content="District Lions Leadership Institute Management System - Lions International District 325 F">
+  <link rel="icon" href="logo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="topbar"><div class="wrap"><span>Lions International District 325 F</span><span id="systemStatusText">DLLI Management System</span></div></div>
 
-function apiReady(){return API_URL && !API_URL.includes('PASTE_YOUR');}
-function esc(v){return String(v ?? '').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));}
-function setBtnLoading(btn,on,text){if(!btn)return;if(on){btn.dataset.old=btn.innerHTML;btn.classList.add('loading');btn.innerHTML=`<span class="spinner"></span>${text||'Please wait'}`;}else{btn.classList.remove('loading');btn.innerHTML=btn.dataset.old||btn.innerHTML;}}
-function showBox(el,type,msg){if(!el)return;el.className=`status-box show status-${type}`;el.innerHTML=msg;}
-function toast(msg,type='info'){const el=$('#toast');if(!el)return;el.textContent=msg;el.className=`toast show toast-${type}`;clearTimeout(window.__dlliToast);window.__dlliToast=setTimeout(()=>el.className='toast',3200);}
+  <div class="marquee" id="marqueeBox"><div class="marquee-track" id="noticeMarquee">Welcome to District Lions Leadership Institute</div></div>
 
-async function apiGet(action,params={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const u=new URL(API_URL);u.searchParams.set('action',action);Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v??''));const r=await fetch(u.toString(),{redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
-async function apiPost(action,data={}){if(!apiReady())throw new Error('API URL is not configured in config.js');const body=new URLSearchParams({action,...data});const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body,redirect:'follow'});const j=await r.json();if(!j.ok)throw new Error(j.message||'Request failed');return j;}
+  <nav class="nav"><div class="nav-inner">
+    <a class="brand" href="#home"><img src="logo.png" alt="DLLI Logo"><div><div class="brand-title">District Lions Leadership Institute</div><div class="brand-sub">DLLI Management System • District 325 F</div></div></a>
+    <div class="nav-links">
+      <a href="#about">About</a><a href="#registration">Registration</a><a href="#check">Check Status</a><a href="#schedule">Schedule</a>
+      <a id="attendanceNavBtn" class="keep btn btn-success hidden" href="#" rel="noopener">Attendance</a>
+      <a class="keep btn btn-light" href="admin.html">Admin</a>
+    </div>
+  </div></nav>
 
-function applyMarqueeSettings(s){
-  const box=$('#marqueeBox'), track=$('#noticeMarquee'); if(!box||!track)return;
-  const speed=Math.max(5,Number(s.MARQUEE_SPEED||65));
-  const size=Math.max(10,Math.min(36,Number(s.MARQUEE_FONT_SIZE||17)));
-  box.style.background=s.MARQUEE_BG_COLOR||'#FFF4E5';
-  track.style.color=s.MARQUEE_TEXT_COLOR||'#B00020';
-  track.style.fontWeight=String(s.MARQUEE_BOLD||'YES').toUpperCase()==='YES'?'800':'400';
-  track.style.fontSize=size+'px';
-  track.style.animationDuration=speed+'s';
-  track.style.animationName=String(s.MARQUEE_DIRECTION||'LEFT').toUpperCase()==='RIGHT'?'scrollRight':'scrollLeft';
-}
+  <main>
+    <section class="hero" id="home"><div class="hero-grid">
+      <div>
+        <span class="eyebrow">Leadership • Learning • Service</span>
+        <h1 id="heroTitle">District Lions Leadership Institute</h1>
+        <p id="heroIntro">A professional platform for DLLI registration, participant management, training schedules and institute administration.</p>
+        <div class="hero-actions">
+          <a class="btn btn-accent" href="#registration">Register Now</a>
+          <a class="btn btn-outline hero-outline" href="#check">Check Registration</a>
+          <a id="attendanceHeroBtn" class="btn btn-success hidden" href="#" rel="noopener">Open Attendance System</a>
+        </div>
+      </div>
+      <div class="hero-card"><h3>Institute Information</h3><div class="meta">
+        <div class="meta-box"><small>Date</small><strong id="instituteDate">To be announced</strong></div>
+        <div class="meta-box"><small>Venue</small><strong id="venue">To be announced</strong></div>
+        <div class="meta-box"><small>Registration</small><strong id="regStatus">Open</strong></div>
+        <div class="meta-box"><small>Deadline</small><strong id="deadline">To be announced</strong></div>
+      </div></div>
+    </div></section>
 
-function configureAttendance(s){
-  const url=String(s.ATTENDANCE_URL||'').trim();
-  const text=String(s.ATTENDANCE_BUTTON_TEXT||'Attendance').trim()||'Attendance';
-  const openNew=String(s.ATTENDANCE_OPEN_NEW_TAB||'YES').toUpperCase()==='YES';
-  ['#attendanceNavBtn','#attendanceHeroBtn'].forEach(sel=>{
-    const el=$(sel); if(!el)return;
-    if(/^https?:\/\//i.test(url)){
-      el.href=url; el.classList.remove('hidden');
-      el.target=openNew?'_blank':'_self';
-      el.textContent=sel.includes('Hero')?`Open ${text}`:text;
-    }else{
-      el.classList.add('hidden'); el.removeAttribute('href');
-    }
-  });
-}
+    <section class="section alt" id="about"><div class="section-head"><h2>One Platform for DLLI</h2><p>Designed to make participant registration and training administration simple on both mobile and desktop.</p></div><div class="grid-3">
+      <div class="feature"><div class="icon">✓</div><h3>Easy Registration</h3><p>Participants can submit details online and track approval status using Lions ID, mobile number, Registration ID or DLLI ID.</p></div>
+      <div class="feature"><div class="icon">↗</div><h3>Attendance Link</h3><p>DLLI connects directly to your existing dedicated Attendance System without changing its working logic.</p></div>
+      <div class="feature"><div class="icon">▣</div><h3>Central Management</h3><p>Admins can approve registrations, manage clubs, sessions, faculty, reports and system settings from a separate dashboard.</p></div>
+    </div></section>
 
-async function loadPublic(){
-  try{
-    const r=await apiGet('getPublicData');
-    const s=r.settings||{};
-    publicClubs=r.clubs||[];
-    $('#heroTitle').textContent=s.INSTITUTE_NAME||'District Lions Leadership Institute';
-    $('#noticeMarquee').textContent=s.NOTICE_MARQUEE||'Welcome to District Lions Leadership Institute';
-    $('#venue').textContent=s.VENUE||'To be announced';
-    $('#deadline').textContent=s.REGISTRATION_DEADLINE||'To be announced';
-    $('#regStatus').textContent=(s.REGISTRATION_OPEN||'YES')==='YES'?'Open':'Closed';
-    $('#systemStatusText').textContent=s.SYSTEM_NAME||'DLLI Management System';
-    const f=s.INSTITUTE_DATE_FROM||'',t=s.INSTITUTE_DATE_TO||'';
-    $('#instituteDate').textContent=f?(t&&t!==f?`${f} – ${t}`:f):'To be announced';
-    applyMarqueeSettings(s);
-    configureAttendance(s);
+    <section class="section" id="registration"><div class="section-head"><h2>DLLI Registration</h2><p>Complete the form carefully. Your registration will remain pending until verified by the DLLI administration team.</p></div>
+      <div class="form-shell card"><form id="registrationForm"><div class="form-grid">
+        <div class="field"><label>Lions ID *</label><input name="lionsId" inputmode="numeric" required placeholder="Enter Lions ID"></div>
+        <div class="field"><label>Full Name *</label><input name="fullName" required placeholder="Lion Full Name"></div>
+        <div class="field"><label>Club Name *</label><select name="clubName" id="clubSelect" required><option value="">Select Club</option></select></div>
+        <div class="field"><label>Current Position *</label><input name="currentPosition" required placeholder="e.g. Club President"></div>
+        <div class="field"><label>Region</label><input id="regionDisplay" readonly placeholder="Auto from Club"></div>
+        <div class="field"><label>Zone</label><input id="zoneDisplay" readonly placeholder="Auto from Club"></div>
+        <div class="field"><label>Mobile Number *</label><input name="mobile" required inputmode="tel" placeholder="98XXXXXXXX"></div>
+        <div class="field"><label>Email *</label><input name="email" type="email" required placeholder="name@example.com"></div>
+        <div class="field"><label>Gender</label><select name="gender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+        <div class="field"><label>T-shirt Size</label><select name="tshirtSize"><option value="">Select</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>XXXL</option></select></div>
+        <div class="field"><label>Food Preference</label><select name="foodPreference"><option value="">Select</option><option>Vegetarian</option><option>Non-Vegetarian</option><option>Other</option></select></div>
+        <div class="field"><label>Accommodation Required</label><select name="accommodationRequired"><option value="NO">NO</option><option value="YES">YES</option></select></div>
+        <div class="field"><label>Emergency Contact Name</label><input name="emergencyName" placeholder="Contact person"></div>
+        <div class="field"><label>Emergency Contact Number</label><input name="emergencyNumber" inputmode="tel" placeholder="98XXXXXXXX"></div>
+        <div class="field full"><label>Previous Leadership Training</label><input name="previousTraining" placeholder="Mention previous institute/training, if any"></div>
+        <div class="field full"><label>Remarks</label><textarea name="remarks" placeholder="Any additional information"></textarea></div>
+        <div class="field full"><button class="btn btn-primary" id="submitBtn" type="submit">Submit Registration</button><div class="hint">Fields marked * are required.</div></div>
+      </div></form><div id="registrationMessage" class="status-box"></div></div>
+    </section>
 
-    const select=$('#clubSelect');
-    select.innerHTML='<option value="">Select Club</option>';
-    publicClubs.forEach(c=>{const o=document.createElement('option');o.value=c.Club_Name;o.textContent=c.Club_Name;select.appendChild(o);});
-    renderSchedule(r.sessions||[]);
-    if((s.REGISTRATION_OPEN||'YES')!=='YES'){$('#submitBtn').disabled=true;$('#submitBtn').textContent='Registration Closed';}
-  }catch(e){console.warn(e.message);toast(e.message,'error');}
-}
+    <section class="section alt" id="check"><div class="section-head"><h2>Check Registration Status</h2><p>Use Lions ID, mobile number, Registration ID or DLLI ID.</p></div><div class="form-shell card"><div class="form-grid"><div class="field"><label>Search Key</label><input id="checkKey" placeholder="Enter Lions ID / Mobile / Registration ID / DLLI ID"></div><div class="field action-field"><button class="btn btn-primary" id="checkBtn" type="button">Check Status</button></div></div><div id="checkResult" class="status-box"></div></div></section>
 
-function renderSchedule(rows){const b=$('#scheduleBody');if(!rows.length){b.innerHTML='<tr><td colspan="6">No schedule published yet.</td></tr>';return;}b.innerHTML=rows.map(x=>`<tr><td>${esc(x.Session_Number)}</td><td>${esc(x.Session_Title)}</td><td>${esc(x.Date)}</td><td>${esc(x.Start_Time)}${x.End_Time?' - '+esc(x.End_Time):''}</td><td>${esc(x.Faculty_Name)}</td><td>${esc(x.Hall)}</td></tr>`).join('');}
+    <section class="section" id="schedule"><div class="section-head"><h2>Institute Schedule</h2><p>Active sessions published by the administration will appear here.</p></div><div class="wrap card"><div class="table-wrap"><table><thead><tr><th>Session</th><th>Title</th><th>Date</th><th>Time</th><th>Faculty</th><th>Hall</th></tr></thead><tbody id="scheduleBody"><tr><td colspan="6">No schedule published yet.</td></tr></tbody></table></div></div></section>
+  </main>
 
-$('#clubSelect').addEventListener('change',e=>{const c=publicClubs.find(x=>x.Club_Name===e.target.value)||{};$('#regionDisplay').value=c.Region||'';$('#zoneDisplay').value=c.Zone||'';});
-
-$('#registrationForm').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const form=e.currentTarget,btn=$('#submitBtn'),box=$('#registrationMessage');
-  if(!form.reportValidity())return;
-  setBtnLoading(btn,true,'Submitting');
-  try{
-    const d=Object.fromEntries(new FormData(form).entries());
-    const r=await apiPost('registerParticipant',d);
-    showBox(box,'success',`<strong>Registration submitted successfully.</strong><br>Registration ID: <strong>${esc(r.registrationId)}</strong><br>Status: ${esc(r.status)}<br><small>Please save your Registration ID for future reference.</small>`);
-    toast('Registration submitted successfully.','success');
-    form.reset();$('#regionDisplay').value='';$('#zoneDisplay').value='';
-    box.scrollIntoView({behavior:'smooth',block:'center'});
-  }catch(err){showBox(box,'error',esc(err.message));toast(err.message,'error');}
-  finally{setBtnLoading(btn,false);}
-});
-
-$('#checkBtn').addEventListener('click',async()=>{
-  const key=$('#checkKey').value.trim(),btn=$('#checkBtn'),box=$('#checkResult');
-  if(!key){showBox(box,'warning','Please enter Lions ID, mobile number, Registration ID or DLLI ID.');return;}
-  setBtnLoading(btn,true,'Checking');
-  try{
-    const r=await apiGet('checkRegistration',{key});const x=r.registration;
-    const type=x.Status==='APPROVED'?'success':x.Status==='REJECTED'?'error':'info';
-    showBox(box,type,`<strong>${esc(x.Full_Name)}</strong><br>Club: ${esc(x.Club_Name)}<br>Registration ID: ${esc(x.Registration_ID)}<br>Status: <strong>${esc(x.Status)}</strong>${x.DLLI_ID?`<br>DLLI ID: <strong>${esc(x.DLLI_ID)}</strong>`:''}${x.Rejected_Reason?`<br>Reason: ${esc(x.Rejected_Reason)}`:''}`);
-  }catch(err){showBox(box,'error',esc(err.message));}
-  finally{setBtnLoading(btn,false);}
-});
-
-$('#checkKey').addEventListener('keydown',e=>{if(e.key==='Enter'){$('#checkBtn').click();}});
-document.addEventListener('DOMContentLoaded',loadPublic);
+  <footer class="footer"><div class="footer-grid"><div><strong>DLLI Management System</strong><br><small>Lions International District 325 F</small></div><small>Designed by Nirajan Aryal</small></div></footer>
+  <div id="toast" class="toast"></div>
+  <script src="config.js"></script><script src="app.js"></script>
+</body></html>
